@@ -43,6 +43,7 @@ TABLES['snp'] = (
     "CREATE TABLE IF NOT EXISTS `snp`("
     "  `id` int(11) NOT NULL AUTO_INCREMENT,"
     "  `rsid` varchar(45) NOT NULL,"
+    "  `chr` varchar(5) NOT NULL"
     "  `has_sig` binary(1) NOT NULL,"
     "  PRIMARY KEY (`id`)"
     ") ENGINE=InnoDB AUTO_INCREMENT=862719 DEFAULT CHARSET=utf8;")
@@ -75,14 +76,14 @@ documents = {}     # Dictionary for MongoDB SNP/loci documents
 with open(snpFilePath,'r') as csvfile:
     data = csv.reader(csvfile,delimiter='\t')
     for row in data:
-        if(len(row) == 2):        
+        if(len(row) == 3):        
             hasSig = False
-            if row[1] != '' and row[1] != 'untested':
+            if row[2] != '' and row[2] != 'untested':
                 hasSig = True
             rsidList[row[0]] = 0
-            insStr = "INSERT INTO snp (rsid, has_sig) VALUES (\"{0}\", {1})".format(row[0], hasSig)
+            insStr = "INSERT INTO snp (rsid, chr, has_sig) VALUES (\"{0}\", {1}, {2})".format(row[0], row[1], hasSig)
             snpInserts[row[0]] = insStr
-            documents[row[0]] = {"rsid":row[0], "has_sig":row[1], "loci":[]}
+            documents[row[0]] = {"rsid":row[0], "chr":row[1], "has_sig":row[2], "loci":[]}
 
 # Insert SNP data into MySQL
 mysqlCursor = mysqlConnection.cursor()
