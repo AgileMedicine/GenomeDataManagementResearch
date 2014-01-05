@@ -27,6 +27,9 @@ pip-log.txt
 .tox
 nosetests.xml
 
+# Results file
+results.txt
+
 # Translations
 *.mo
 
