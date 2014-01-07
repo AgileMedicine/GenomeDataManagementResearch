@@ -39,3 +39,7 @@ results-mongo.txt
 .mr.developer.cfg
 .project
 .pydevproject
+
+
+# IDEA Pycharm
+.idea
