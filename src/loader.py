@@ -1,7 +1,6 @@
 import argparse
 import csv, os, time
-import mysql.connector, pymongo
-from mysql.connector import errorcode
+import MySQLdb
 from pymongo import MongoClient
 
 # Get command line arguments
@@ -68,32 +67,21 @@ chromosomes = ["21"] # dev list
 if dev is False:
     chromosomes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"] # complete list
 
-# Connection strings
-mysqlConfig = {
-    'user':username,
-    'password':password,
-    'host':sqlHost,
-}
-
 # Create MongoDB and MySQL connections
 mongoClient = MongoClient(mongoHost)
 mongoDb = mongoClient[databaseName]
 mongoCollection = mongoDb[collectionName]
 
 # Create MySQL database, tables if not exists
-mysqlConnection = mysql.connector.connect(**mysqlConfig)
+mysqlConnection = MySQLdb.connect(host=sqlHost,user=username,passwd=password)
 createDbCursor = mysqlConnection.cursor()
-try:
-    mysqlConnection.database = databaseName
-except mysql.connector.Error as err:
-    if err.errno == errorcode.ER_BAD_DB_ERROR:
-        createDbCursor.execute("CREATE DATABASE {0} DEFAULT CHARACTER SET 'utf8'".format(databaseName))
-        mysqlConnection.commit()
-        mysqlConnection.database = databaseName
-    else:
-        print(err)
-        exit(1)
-        
+
+createDbCursor.execute("CREATE DATABASE IF NOT EXISTS " + databaseName + " DEFAULT CHARACTER SET 'utf8'".format(databaseName))
+mysqlConnection.commit()
+mysqlConnection.close()
+mysqlConnection = MySQLdb.connect(host=sqlHost,user=username,passwd=password,db=databaseName)
+createDbCursor = mysqlConnection.cursor()
+
 TABLES = {}
 TABLES['snp'] = (
     "CREATE TABLE IF NOT EXISTS `snp`("
