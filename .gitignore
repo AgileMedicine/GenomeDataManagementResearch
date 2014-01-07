@@ -29,6 +29,8 @@ nosetests.xml
 
 # Results file
 results.txt
+results-mysql.txt
+results-mongo.txt
 
 # Translations
 *.mo
