@@ -67,6 +67,8 @@ for curChr in chromosomes:
     # Clear dictionaries for loading multiple chromosomes
     documents.clear()
 
+    print "Chromosome " + str(curChr) + ". Reading SNP data"
+
     # Read in data from SNP file
     with open(curSnpFilePath,'r') as csvfile:
         data = csv.reader(csvfile,delimiter='\t')
@@ -80,6 +82,7 @@ for curChr in chromosomes:
     # Data for reporting
     mysqlSnpTime = '-'
 
+    print "Chromosome " + str(curChr) + ". Reading loci data."
 
     # Now that we have primary keys for each SNP, read in loci data
     with open(curLociFilePath,'r') as csvfile:
@@ -97,6 +100,8 @@ for curChr in chromosomes:
     # Data for reporting
     mongoDocuments = len(documents)
     mongoTime = '-'
+
+    print "Starting to insert " + mongoDocuments + " documents"
 
     # Log start time for MongoDB inserts
     start = time.time()

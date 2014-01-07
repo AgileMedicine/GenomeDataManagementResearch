@@ -107,7 +107,9 @@ for curChr in chromosomes:
     snpInserts.clear()
     lociInserts = []
     rsidList.clear()
-    
+
+    print "Chromosome " + str(curChr) + ". Reading SNP Data"
+
     # Read in data from SNP file
     with open(curSnpFilePath,'r') as csvfile:
         data = csv.reader(csvfile,delimiter='\t')
@@ -126,7 +128,9 @@ for curChr in chromosomes:
     
     # Insert SNP data into MySQL
     mysqlCursor = mysqlConnection.cursor()
-    
+
+    print "Chromosome " + str(curChr) + ". Inserting SNP Data."
+
     # Log current run start time
     start = time.time()
     
@@ -147,7 +151,9 @@ for curChr in chromosomes:
     
     # Clear list of SNPs to free up memory
     snpInserts.clear()
-    
+
+    print "Chromosome " + str(curChr) + ". Reading loci Data."
+
     # Now that we have primary keys for each SNP, read in loci data
     with open(curLociFilePath,'r') as csvfile:
         data = csv.reader(csvfile,delimiter='\t')
@@ -165,7 +171,9 @@ for curChr in chromosomes:
     
     # Create new cursor, enter loci data into MySQL
     cursor = mysqlConnection.cursor()
-    
+
+    print "Chromosome " + str(curChr) + ". Inserting loci data."
+
     # Log current run start time and number of loci
     start = time.time()
     
