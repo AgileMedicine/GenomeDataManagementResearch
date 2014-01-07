@@ -17,7 +17,6 @@ dev = False
 databaseName = 'snp_research'
 mongoHost = 'mongodb://localhost:27017/'
 collectionName = 'snps'
-loadMongo = True
 path = ''
 
 # Update any present from CLI
@@ -33,7 +32,7 @@ if args.coll is not None: # MongoDB collection name
     collectionName = args.coll
 
 # Open results file
-resultsFile = open('results.txt', 'w')
+resultsFile = open('results-mongo.txt', 'w')
 
 # Data files
 snpFilePath = 'snpData-chr{0}.txt'
@@ -52,8 +51,6 @@ mongoDb = mongoClient[databaseName]
 mongoCollection = mongoDb[collectionName]
 
 # Dictionaries and arrays for SQL and MongoDB queries
-rsidList = {}      # Dictionary of RSIDs that will also hold the
-                   # primary key for each SNP in SQL
 documents = {}     # Dictionary for MongoDB SNP/loci documents
 
 for curChr in chromosomes:
@@ -67,8 +64,7 @@ for curChr in chromosomes:
         curSnpFilePath = path.rstrip('\\') + '\\' + curSnpFilePath
         curLociFilePath = path.rsplit('\\') + '\\' + curLociFilePath
 
-    # Clear dictionaries
-    rsidList.clear()
+    # Clear dictionaries for loading multiple chromosomes
     documents.clear()
 
     # Read in data from SNP file
@@ -79,7 +75,6 @@ for curChr in chromosomes:
                 hasSig = False
                 if row[2] != '' and row[2] != 'untested':
                     hasSig = True
-                rsidList[row[0]] = 0
                 documents[row[0]] = {"rsid":row[0], "chr":row[1], "has_sig":row[2], "loci":[]}
 
     # Data for reporting
@@ -90,7 +85,7 @@ for curChr in chromosomes:
     with open(curLociFilePath,'r') as csvfile:
         data = csv.reader(csvfile,delimiter='\t')
         for row in data:
-            if(len(row) == 4):
+            if(len(row) == 4 and row[0] in documents):
                 # Load loci in Mongo documents
                 curDoc = documents[row[0]]
                 if curDoc["loci"] is None:
@@ -101,23 +96,20 @@ for curChr in chromosomes:
 
     # Data for reporting
     mongoDocuments = len(documents)
-    mysqlLociTime = '-'
-    mysqlTotalTime = '-'
     mongoTime = '-'
 
-    if loadMongo:
-        # Log start time for MongoDB inserts
-        start = time.time()
+    # Log start time for MongoDB inserts
+    start = time.time()
 
-        # Insert each document with SNP and loci data
-        for v in documents.iteritems():
-            mongoCollection.insert(v[1])
+    # Insert each document with SNP and loci data
+    for v in documents.iteritems():
+        mongoCollection.insert(v[1])
 
-        # Log end time
-        end=time.time()
+    # Log end time
+    end=time.time()
 
-        mongoTime = end-start
-        print "\tMongoDB: " + str(mongoTime) + "s (" + str(mongoDocuments) +" documents)"
+    mongoTime = end-start
+    print "\tMongoDB: " + str(mongoTime) + "s (" + str(mongoDocuments) +" documents)"
 
     results = curChr + "\t" + str(mongoTime) + "\t" + str(mongoDocuments)
     print results
