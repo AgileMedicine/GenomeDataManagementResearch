@@ -3,6 +3,7 @@ import csv, os, time
 import MySQLdb
 import result
 from result import Result
+import gspread, getpass
 
 # Get command line arguments
 parser = argparse.ArgumentParser(description='Load SNP and locus data')
@@ -13,20 +14,31 @@ parser.add_argument('--yhost', type=str, help='MySQL host')
 parser.add_argument('--username', type=str, help='MySQL username')
 parser.add_argument('--password', type=str, help='MySQL password')
 parser.add_argument('--tag', type=str, help='Tag to place in results file')
+parser.add_argument('--remote', action='store_true', help='Enable remote reporting')
+parser.add_argument('--rkey', help='Google document key')
+
 args = parser.parse_args()
 
 # Set default variables
 dev = False
+remote = False
 databaseName = 'snp_research'
 username = 'dev'
 password = ''
 sqlHost = '127.0.0.1'
 path = ''
 tag = ''
+docKey = ''
 
 # Update any present from CLI
 if args.dev: # If dev mode, only load chr 21
     dev = True
+if args.remote and args.rkey is not None: # If set to remote log and document key is present, log to GDocs
+    remote = True
+    docKey = args.rkey
+else:
+    remote = False
+    
 if args.path is not None: # If set, use as root path for chromosome data
     path = args.path
 if args.db is not None: # If set, use as database name for MySQL
@@ -48,6 +60,15 @@ resultsFileName += '.txt'
 resultsFile = open(resultsFileName, 'w')
 result = Result()
 resultsFile.write(result.toHeader() + '\n')
+
+if remote:
+    gusername = raw_input("Enter Google username: ")
+    gpassword = getpass.getpass("Enter Google password: ")    
+    gs = gspread.Client(auth=(gusername,gpassword))
+    gs.login()
+    ss = gs.open_by_key(docKey)
+    ws = ss.add_worksheet(tag + "-" + str(time.time()),1,1)
+    ws.append_row(result.headerArr())
 
 # Data files
 snpFilePath = 'snpData-chr{0}.txt'
@@ -205,6 +226,10 @@ for curChr in chromosomes:
     
     print result.toTerm()
     resultsFile.write(result.toString() + '\n')
+    if remote:
+        print "Sending to GDocs..."
+        gs.login()
+        ws.append_row(result.stringArr())
 
 resultsFile.close()
 
