@@ -1,6 +1,7 @@
 import argparse
 import csv, os, time
 from pymongo import MongoClient
+from result import Result
 
 # Get command line arguments
 parser = argparse.ArgumentParser(description='Load SNP and locus data')
@@ -9,6 +10,7 @@ parser.add_argument('--path', help='Path to chromosome data')
 parser.add_argument('--db', type=str, help='MongoDB database name')
 parser.add_argument('--ohost', type=str, help='MongoDB host')
 parser.add_argument('--coll', type=str, help='MongoDB collection')
+parser.add_argument('--tag', type=str, help='Tag to place in results file')
 
 args = parser.parse_args()
 
@@ -18,6 +20,7 @@ databaseName = 'snp_research'
 mongoHost = 'mongodb://localhost:27017/'
 collectionName = 'snps'
 path = ''
+tag = ''
 
 # Update any present from CLI
 if args.dev: # If dev mode, only load chr 21
@@ -30,9 +33,17 @@ if args.ohost is not None: # MongoDB connection string
     mongoHost = args.ohost
 if args.coll is not None: # MongoDB collection name
     collectionName = args.coll
+if args.tag is not None: # Tag to place in results file
+    tag = args.tag
 
-# Open results file
-resultsFile = open('results-mongo.txt', 'w')
+# Open results file, print headers
+resultsFileName = 'results-mongo'
+if resultsFileName != "":
+    resultsFileName += '-' + tag
+resultsFileName += '.txt'
+resultsFile = open(resultsFileName, 'w')
+result = Result()
+resultsFile.write(result.toHeader() + '\n')
 
 # Data files
 snpFilePath = 'snpData-chr{0}.txt'
@@ -54,8 +65,12 @@ mongoCollection = mongoDb[collectionName]
 documents = {}     # Dictionary for MongoDB SNP/loci documents
 
 for curChr in chromosomes:
+    result = Result()
+    result.method = "Mongo"
+    result.tag = tag
     print "Chromosome " + str(curChr)
-
+    result.chromosome = str(curChr)
+    
     # Set file paths for current chromosome
     curSnpFilePath = snpFilePath.format(curChr)
     curLociFilePath = lociFilePath.format(curChr)
@@ -68,7 +83,8 @@ for curChr in chromosomes:
     documents.clear()
 
     print "Chromosome " + str(curChr) + ". Reading SNP data"
-
+    result.snpLoadStart = time.time()
+    
     # Read in data from SNP file
     with open(curSnpFilePath,'r') as csvfile:
         data = csv.reader(csvfile,delimiter='\t')
@@ -79,11 +95,11 @@ for curChr in chromosomes:
                     hasSig = True
                 documents[row[0]] = {"rsid":row[0], "chr":row[1], "has_sig":row[2], "loci":[]}
 
-    # Data for reporting
-    mysqlSnpTime = '-'
+    result.snpLoadEnd = time.time()
 
     print "Chromosome " + str(curChr) + ". Reading loci data."
-
+    result.lociLoadStart = time.time()
+    
     # Now that we have primary keys for each SNP, read in loci data
     with open(curLociFilePath,'r') as csvfile:
         data = csv.reader(csvfile,delimiter='\t')
@@ -98,27 +114,25 @@ for curChr in chromosomes:
                 documents[row[0]] = curDoc
 
     # Data for reporting
-    mongoDocuments = len(documents)
-    mongoTime = '-'
+    result.lociLoadEnd = time.time()
+    result.totalDocuments = len(documents)
 
-    print "Starting to insert " + mongoDocuments + " documents"
+    print "Starting to insert " + str(result.totalDocuments) + " documents"
 
     # Log start time for MongoDB inserts
-    start = time.time()
+    result.documentInsertStart = time.time()
 
     # Insert each document with SNP and loci data
     for v in documents.iteritems():
         mongoCollection.insert(v[1])
 
     # Log end time
-    end=time.time()
+    result.documentInsertEnd = time.time()
+    result.calculate()
+    
+    print result.toTerm()
 
-    mongoTime = end-start
-    print "\tMongoDB: " + str(mongoTime) + "s (" + str(mongoDocuments) +" documents)"
-
-    results = curChr + "\t" + str(mongoTime) + "\t" + str(mongoDocuments)
-    print results
-    resultsFile.write(results)
+    resultsFile.write(result.toString() + '\n')
 
 resultsFile.close()
 

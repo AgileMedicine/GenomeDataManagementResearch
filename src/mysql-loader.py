@@ -1,6 +1,8 @@
 import argparse
 import csv, os, time
 import MySQLdb
+import result
+from result import Result
 
 # Get command line arguments
 parser = argparse.ArgumentParser(description='Load SNP and locus data')
@@ -10,7 +12,7 @@ parser.add_argument('--db', type=str, help='MySQL database name')
 parser.add_argument('--yhost', type=str, help='MySQL host')
 parser.add_argument('--username', type=str, help='MySQL username')
 parser.add_argument('--password', type=str, help='MySQL password')
-
+parser.add_argument('--tag', type=str, help='Tag to place in results file')
 args = parser.parse_args()
 
 # Set default variables
@@ -20,6 +22,7 @@ username = 'dev'
 password = ''
 sqlHost = '127.0.0.1'
 path = ''
+tag = ''
 
 # Update any present from CLI
 if args.dev: # If dev mode, only load chr 21
@@ -34,9 +37,17 @@ if args.password is not None: # MySQL password
     password = args.password
 if args.yhost is not None: # MySQL host name
     sqlHost = args.yhost
+if args.tag is not None: # Tag to place in results file
+    tag = args.tag
 
 # Open results file
-resultsFile = open('results-mysql.txt', 'w')
+resultsFileName = 'results-mysql'
+if resultsFileName != "":
+    resultsFileName += '-' + tag
+resultsFileName += '.txt'
+resultsFile = open(resultsFileName, 'w')
+result = Result()
+resultsFile.write(result.toHeader() + '\n')
 
 # Data files
 snpFilePath = 'snpData-chr{0}.txt'
@@ -93,7 +104,11 @@ rsidList = {}      # Dictionary of RSIDs that will also hold the
                    # primary key for each SNP in SQL
 
 for curChr in chromosomes:
+    result = Result()
+    result.method = "MySQL"
+    result.tag = tag    
     print "Chromosome " + str(curChr)
+    result.chromosome = str(curChr)
     
     # Set file paths for current chromosome
     curSnpFilePath = snpFilePath.format(curChr)
@@ -109,7 +124,8 @@ for curChr in chromosomes:
     rsidList.clear()
 
     print "Chromosome " + str(curChr) + ". Reading SNP Data"
-
+    result.snpLoadStart = time.time()
+    
     # Read in data from SNP file
     with open(curSnpFilePath,'r') as csvfile:
         data = csv.reader(csvfile,delimiter='\t')
@@ -123,16 +139,16 @@ for curChr in chromosomes:
                 snpInserts[row[0]] = insStr
     
     # Data for reporting
-    snpEntries = len(snpInserts)    
-    mysqlSnpTime = '-'
-    
+    result.snpLoadEnd = time.time()
+    result.totalSnps = len(snpInserts)
+           
     # Insert SNP data into MySQL
     mysqlCursor = mysqlConnection.cursor()
 
     print "Chromosome " + str(curChr) + ". Inserting SNP Data."
 
     # Log current run start time
-    start = time.time()
+    result.snpInsertStart = time.time()
     
     # For each snp, insert record and then grab primary key
     for rsid,snp in snpInserts.iteritems():
@@ -143,17 +159,15 @@ for curChr in chromosomes:
     mysqlConnection.commit()
     
     # Log completed time, close MySQL cursor
-    end=time.time()
-    mysqlSnpTime = end-start
+    result.snpInsertEnd=time.time()
     mysqlCursor.close()
 
-    print "\tSNPs: " + str(mysqlSnpTime) + "s (" + str(snpEntries) + " records)"
-    
     # Clear list of SNPs to free up memory
     snpInserts.clear()
 
     print "Chromosome " + str(curChr) + ". Reading loci Data."
-
+    result.lociLoadStart = time.time()
+    
     # Now that we have primary keys for each SNP, read in loci data
     with open(curLociFilePath,'r') as csvfile:
         data = csv.reader(csvfile,delimiter='\t')
@@ -165,9 +179,8 @@ for curChr in chromosomes:
                     lociInserts.append(insStr)
                 
     # Data for reporting
-    lociEntries = len(lociInserts)
-    mysqlLociTime = '-'
-    mysqlTotalTime = '-'
+    result.lociLoadEnd = time.time()
+    result.totalLoci = len(lociInserts)
     
     # Create new cursor, enter loci data into MySQL
     cursor = mysqlConnection.cursor()
@@ -175,7 +188,7 @@ for curChr in chromosomes:
     print "Chromosome " + str(curChr) + ". Inserting loci data."
 
     # Log current run start time and number of loci
-    start = time.time()
+    result.lociInsertStart = time.time()
     
     # Insert each locus
     for locus in lociInserts:
@@ -185,20 +198,13 @@ for curChr in chromosomes:
     mysqlConnection.commit()
     
     # Log end time and total MySQL time
-    end=time.time()
+    result.lociInsertEnd = time.time()
     
-    mysqlLociTime = end-start
-    print "\tLoci: " + str(mysqlLociTime) + "s (" + str(lociEntries) + " records)"
-    
-    mysqlTotalTime = mysqlSnpTime + mysqlLociTime
-    print "\t\tTotal MySQL time: " + str(mysqlTotalTime) + "s"
-
     # Close MySQL cursor
     cursor.close()
     
-    results = curChr + "\t" + str(mysqlSnpTime) + "\t" + str(snpEntries) + "\t" + str(mysqlLociTime) + "\t" + str(lociEntries) + "\t" + str(mysqlTotalTime)
-    print results
-    resultsFile.write(results)
+    print result.toTerm()
+    resultsFile.write(result.toString() + '\n')
 
 resultsFile.close()
 
