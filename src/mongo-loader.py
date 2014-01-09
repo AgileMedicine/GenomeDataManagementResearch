@@ -161,7 +161,7 @@ for curChr in chromosomes:
 
     if bulk:
         print "Bulk insertion starting"
-        mongoCollection.insert(documents)
+        mongoCollection.insert(documents.values())
     else:
         print "Individual document inserting starting"
         # Insert each document with SNP and loci data
