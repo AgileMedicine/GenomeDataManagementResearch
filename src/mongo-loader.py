@@ -14,6 +14,7 @@ parser.add_argument('--coll', type=str, help='MongoDB collection')
 parser.add_argument('--tag', type=str, help='Tag to place in results file')
 parser.add_argument('--remote', action='store_true', help='Enable remote reporting')
 parser.add_argument('--rkey', help='Google document key')
+parser.add_argument('--bulk', action='store_true', help='Perform bulk insert.')
 
 args = parser.parse_args()
 
@@ -26,6 +27,7 @@ collectionName = 'snps'
 path = ''
 tag = ''
 docKey = ''
+bulk = False
 
 # Update any present from CLI
 if args.dev: # If dev mode, only load chr 21
@@ -46,6 +48,8 @@ if args.coll is not None: # MongoDB collection name
     collectionName = args.coll
 if args.tag is not None: # Tag to place in results file
     tag = args.tag
+if args.bulk:
+    bulk = True
 
 # Open results file, print headers
 resultsFileName = 'results-mongo'
@@ -142,9 +146,14 @@ for curChr in chromosomes:
     # Log start time for MongoDB inserts
     result.documentInsertStart = time.time()
 
-    # Insert each document with SNP and loci data
-    for v in documents.iteritems():
-        mongoCollection.insert(v[1])
+    if bulk:
+        print "Bulk insertion starting"
+        mongoCollection.insert(documents)
+    else:
+        print "Individual document inserting starting"
+        # Insert each document with SNP and loci data
+        for v in documents.iteritems():
+            mongoCollection.insert(v[1])
 
     # Log end time
     result.documentInsertEnd = time.time()
