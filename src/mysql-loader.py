@@ -156,7 +156,7 @@ for curChr in chromosomes:
                 if row[2] != '' and row[2] != 'untested':
                     hasSig = True
                 rsidList[row[0]] = 0
-                insStr = "INSERT INTO snp (rsid, chr, has_sig) VALUES (\"{0}\", {1}, {2})".format(row[0], row[1], hasSig)
+                insStr = "INSERT INTO snp (rsid, chr, has_sig) VALUES (\"{0}\", \"{1}\", {2})".format(row[0], row[1], hasSig)
                 snpInserts[row[0]] = insStr
     
     # Data for reporting
