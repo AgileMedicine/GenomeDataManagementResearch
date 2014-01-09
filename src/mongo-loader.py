@@ -14,6 +14,7 @@ parser.add_argument('--coll', type=str, help='MongoDB collection')
 parser.add_argument('--tag', type=str, help='Tag to place in results file')
 parser.add_argument('--remote', action='store_true', help='Enable remote reporting')
 parser.add_argument('--rkey', help='Google document key')
+parser.add_argument('--start', type=str, help='Chromosome to start load from')
 parser.add_argument('--bulk', action='store_true', help='Perform bulk insert.')
 
 args = parser.parse_args()
@@ -27,6 +28,7 @@ collectionName = 'snps'
 path = ''
 tag = ''
 docKey = ''
+start = '1'
 bulk = False
 
 # Update any present from CLI
@@ -48,6 +50,8 @@ if args.coll is not None: # MongoDB collection name
     collectionName = args.coll
 if args.tag is not None: # Tag to place in results file
     tag = args.tag
+if args.start is not None:
+    start = args.start
 if args.bulk:
     bulk = True
 
@@ -79,6 +83,15 @@ chromosomes = ["21"] # dev list
 # If not in dev mode, iterate through all chromosomes
 if dev is False:
     chromosomes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"] # complete list
+    if start != "1": # Allow restart from anywhere in chromosome list, sequentially as ordered above
+        startList = []
+        hitMin = False
+        for cur in chromosomes:
+            if cur == start:
+                hitMin = True
+            if hitMin:
+                startList.append(cur)
+        chromosomes = startList    
 
 # Create MongoDB and MySQL connections
 mongoClient = MongoClient(mongoHost)

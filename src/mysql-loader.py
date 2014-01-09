@@ -16,7 +16,7 @@ parser.add_argument('--password', type=str, help='MySQL password')
 parser.add_argument('--tag', type=str, help='Tag to place in results file')
 parser.add_argument('--remote', action='store_true', help='Enable remote reporting')
 parser.add_argument('--rkey', help='Google document key')
-
+parser.add_argument('--start', type=str, help='Chromosome to start load from')
 args = parser.parse_args()
 
 # Set default variables
@@ -29,6 +29,7 @@ sqlHost = '127.0.0.1'
 path = ''
 tag = ''
 docKey = ''
+start = '1'
 
 # Update any present from CLI
 if args.dev: # If dev mode, only load chr 21
@@ -51,7 +52,9 @@ if args.yhost is not None: # MySQL host name
     sqlHost = args.yhost
 if args.tag is not None: # Tag to place in results file
     tag = args.tag
-
+if args.start is not None:
+    start = args.start
+    
 # Open results file
 resultsFileName = 'results-mysql'
 if resultsFileName != "":
@@ -80,6 +83,15 @@ chromosomes = ["21"] # dev list
 # If not in dev mode, iterate through all chromosomes
 if dev is False:
     chromosomes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"] # complete list
+    if start != "1": # Allow restart from anywhere in chromosome list, sequentially as ordered above
+        startList = []
+        hitMin = False
+        for cur in chromosomes:
+            if cur == start:
+                hitMin = True
+            if hitMin:
+                startList.append(cur)
+        chromosomes = startList
 
 # Create MySQL database, tables if not exists
 mysqlConnection = MySQLdb.connect(host=sqlHost,user=username,passwd=password)
