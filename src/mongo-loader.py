@@ -180,7 +180,7 @@ for curChr in chromosomes:
         print "Loading json with mongoimport"
         # Restart insert time
         result.documentInsertStart = time.time()
-        loadres = os.system("c:\\progra~1\\mongodb\\mongoimport --host " + mongoHost.rstrip('/').replace("mongodb://","") + " --db " + databaseName + " --collection " + collectionName + " --file " + mimpfile)
+        loadres = os.system("mongoimport --host " + mongoHost.rstrip('/').replace("mongodb://","") + " --db " + databaseName + " --collection " + collectionName + " --file " + mimpfile)
         os.remove(mimpfile)
     else:
         print "Individual document inserting starting"
