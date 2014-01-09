@@ -2,7 +2,7 @@ import argparse
 import csv, os, time
 from pymongo import MongoClient
 from result import Result
-import gspread, getpass
+import gspread, getpass, json, os
 
 # Get command line arguments
 parser = argparse.ArgumentParser(description='Load SNP and locus data')
@@ -16,7 +16,7 @@ parser.add_argument('--remote', action='store_true', help='Enable remote reporti
 parser.add_argument('--rkey', help='Google document key')
 parser.add_argument('--start', type=str, help='Chromosome to start load from')
 parser.add_argument('--bulk', action='store_true', help='Perform bulk insert.')
-
+parser.add_argument('--mongoimport', action='store_true', help='Bulk insert by creating json file and then using mongoimport.')
 args = parser.parse_args()
 
 # Set default variables
@@ -30,6 +30,7 @@ tag = ''
 docKey = ''
 start = '1'
 bulk = False
+mongoimport = False
 
 # Update any present from CLI
 if args.dev: # If dev mode, only load chr 21
@@ -54,6 +55,8 @@ if args.start is not None:
     start = args.start
 if args.bulk:
     bulk = True
+if args.mongoimport:
+    mongoimport = True
 
 # Open results file, print headers
 resultsFileName = 'results-mongo'
@@ -104,6 +107,10 @@ documents = {}     # Dictionary for MongoDB SNP/loci documents
 for curChr in chromosomes:
     result = Result()
     result.method = "Mongo"
+    if bulk:
+        result.method += "-Bulk"
+    if mongoimport:
+        result.method += "-jsonImport"
     result.tag = tag
     print "Chromosome " + str(curChr)
     result.chromosome = str(curChr)
@@ -162,6 +169,19 @@ for curChr in chromosomes:
     if bulk:
         print "Bulk insertion starting"
         mongoCollection.insert(documents.values())
+    elif mongoimport:
+        mimpfile = "jsonchr" + str(curChr) + ".json"
+        print "Writing json file for mongoimport"
+        fp = open(mimpfile,'w')
+        for curDoc in documents.values():
+            json.dump(curDoc,fp)
+            fp.write('\n')
+        fp.close()
+        print "Loading json with mongoimport"
+        # Restart insert time
+        result.documentInsertStart = time.time()
+        loadres = os.system("c:\\progra~1\\mongodb\\mongoimport --host " + mongoHost.rstrip('/').replace("mongodb://","") + " --db " + databaseName + " --collection " + collectionName + " --file " + mimpfile)
+        os.remove(mimpfile)
     else:
         print "Individual document inserting starting"
         # Insert each document with SNP and loci data
