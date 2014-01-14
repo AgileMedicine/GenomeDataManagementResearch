@@ -163,7 +163,7 @@ for curChr in chromosomes:
                 if curDoc["loci"] is None:
                     curDoc["loci"] = [{"mrna_acc":row[1],"gene":row[2],"class":row[3]}]
                 else:
-                    curDoc["loci"] = curDoc["loci"].append({"mrna_acc":row[1],"gene":row[2],"class":row[3]})
+                    curDoc["loci"].append({"mrna_acc":row[1],"gene":row[2],"class":row[3]})
                 documents[row[0]] = curDoc
 
     # Data for reporting
@@ -218,8 +218,26 @@ for curChr in chromosomes:
         result.idxGene = idxEnd - idxStart
                
     if runQueries:
-        x = 0    
-    
+        qryStart = time.time()
+        mongoCollection.find({"rsid":"rs8788"})
+        qryEnd = time.time()
+        result.qryByRsid = qryEnd-qryStart
+        
+        qryStart = time.time()
+        temptotal = mongoCollection.find({"has_sig":"true"}).count()
+        qryEnd = time.time()
+        result.qryByClinSig = qryEnd-qryStart
+        
+        qryStart = time.time()
+        temptotal = mongoCollection.find({"loci.gene":"COL18A1"}).count()
+        qryEnd = time.time()
+        result.qryByGene = qryEnd-qryStart        
+        
+        qryStart = time.time()
+        temptotal = mongoCollection.find({"has_sig":"false","loci.gene":"COL18A1"}).count()
+        qryEnd = time.time()
+        result.qryByGene = qryEnd-qryStart        
+        
     print result.toTerm()
     resultsFile.write(result.toString() + '\n')
     if remote:

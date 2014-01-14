@@ -48,7 +48,7 @@ class Result:
                          "Total MySQL Time",
                          "Document Insert Start", "Document Insert End", "Document Insert Time", "Total Documents",
                          "Idx-RSID", "Idx-ClinSig", "Idx-Gene", 
-                         "Qry-PK", "Qry-Oid", "Qry-RSID", "Qry-ClinSig", "Qry-Gene",
+                         "Qry-RSID", "Qry-ClinSig", "Qry-Gene",
                          "QryJ-RSID", "QryJ-ClinSig", "QryJ-Gene"]
     
     def stringArr(self):
@@ -61,7 +61,7 @@ class Result:
                                  str(self.mysqlTotalTime),
                                  str(self.documentInsertStart), str(self.documentInsertEnd), str(self.documentInsertTime), str(self.totalDocuments),
                                  str(self.idxRsid), str(self.idxClinSig), str(self.idxGene),
-                                 str(self.qryByPk), str(self.qryByOid), str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene),
+                                 str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene),
                                  str(self.qryJoinRsid), str(self.qryJoinClinSig), str(self.qryJoinGene)]        
     
     def toString(self):
@@ -74,7 +74,7 @@ class Result:
                          str(self.mysqlTotalTime),
                          str(self.documentInsertStart), str(self.documentInsertEnd), str(self.documentInsertTime), str(self.totalDocuments),
                          str(self.idxRsid), str(self.idxClinSig), str(self.idxGene),
-                         str(self.qryByPk), str(self.qryByOid), str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene),
+                         str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene),
                          str(self.qryJoinRsid), str(self.qryJoinClinSig), str(self.qryJoinGene)])
     
     def toHeader(self):
@@ -86,7 +86,7 @@ class Result:
                          "Total MySQL Time",
                          "Document Insert Start", "Document Insert End", "Document Insert Time", "Total Documents",
                          "Idx-RSID", "Idx-ClinSig", "Idx-Gene", 
-                         "Qry-PK", "Qry-Oid", "Qry-RSID", "Qry-ClinSig", "Qry-Gene",
+                         "Qry-RSID", "Qry-ClinSig", "Qry-Gene",
                          "QryJ-RSID", "QryJ-ClinSig", "QryJ-Gene"])    
     def toTerm(self):
         self.calculate()
