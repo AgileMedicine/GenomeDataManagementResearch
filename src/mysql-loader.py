@@ -17,11 +17,15 @@ parser.add_argument('--tag', type=str, help='Tag to place in results file')
 parser.add_argument('--remote', action='store_true', help='Enable remote reporting')
 parser.add_argument('--rkey', help='Google document key')
 parser.add_argument('--start', type=str, help='Chromosome to start load from')
+parser.add_argument('--indexes', action='store_true', help='Create indexes')
+parser.add_argument('--queries', action='store_true', help='Run queries')
 args = parser.parse_args()
 
 # Set default variables
 dev = False
 remote = False
+createIndexes = False
+runQueries = False
 databaseName = 'snp_research'
 username = 'dev'
 password = ''
@@ -54,6 +58,10 @@ if args.tag is not None: # Tag to place in results file
     tag = args.tag
 if args.start is not None:
     start = args.start
+if args.indexes is not None:
+    createIndexes = args.indexes
+if args.queries is not None:
+    runQueries = args.queries
     
 # Open results file
 resultsFileName = 'results-mysql'
@@ -235,6 +243,35 @@ for curChr in chromosomes:
     
     # Close MySQL cursor
     cursor.close()
+    
+    # Create new cursor, create indexes and run test queries
+    cursor = mysqlConnection.cursor()    
+
+    if createIndexes:
+        rsidIndex = "CREATE UNIQUE INDEX `idx_rsid` ON `snp` (`rsid`)"
+        clinIndex = "CREATE INDEX `idx_clin` ON `snp` (`has_sig`)"
+        geneIndex = "CREATE INDEX `idx_gene` ON `locus` (`gene`)"
+        
+        idxStart = time.time()
+        cursor.execute(rsidIndex)
+        idxEnd = time.time()
+        result.idxRsid = idxEnd - idxStart
+        
+        idxStart = time.time()
+        cursor.execute(clinIndex)
+        idxEnd = time.time()
+        result.idxClinSig = idxEnd - idxStart        
+
+        idxStart = time.time()
+        cursor.execute(geneIndex)
+        idxEnd = time.time()
+        result.idxGene = idxEnd - idxStart
+           
+    if runQueries:
+        x = 0
+    
+    # Close MySQL cursor
+    cursor.close()    
     
     print result.toTerm()
     resultsFile.write(result.toString() + '\n')

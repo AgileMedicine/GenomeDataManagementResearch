@@ -23,18 +23,18 @@ class Result:
     documentInsertTime = '-'
     totalDocuments = '-'
     
-    idxRsid = ''
-    idxClinSig = ''
-    idxGene = ''
+    idxRsid = '-'
+    idxClinSig = '-'
+    idxGene = '-'
     
-    qryByPk = ''
-    qryByOid = ''
-    qryByRsid = ''
-    qryByClinSig = ''
-    qryByGene = ''
-    qryJoinGene = ''
-    qryJoinRsid = ''
-    qryJoinClinSig = ''
+    qryByPk = '-'
+    qryByOid = '-'
+    qryByRsid = '-'
+    qryByClinSig = '-'
+    qryByGene = '-'
+    qryJoinGene = '-'
+    qryJoinRsid = '-'
+    qryJoinClinSig = '-'
     
     def __init__(self):
         return
