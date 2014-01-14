@@ -1,9 +1,9 @@
 import argparse
 import csv, os, time
-import MySQLdb
+import MySQLdb  # http://sourceforge.net/projects/mysql-python/
 import result
 from result import Result
-import gspread, getpass
+import gspread, getpass # https://pypi.python.org/pypi/gspread/ (v0.1.0)
 
 # Get command line arguments
 parser = argparse.ArgumentParser(description='Load SNP and locus data')
