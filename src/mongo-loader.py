@@ -1,8 +1,8 @@
 import argparse
 import csv, os, time
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING # https://pypi.python.org/pypi/pymongo/ (v2.6.3)
 from result import Result
-import gspread, getpass, json, os
+import gspread, getpass, json, os # https://pypi.python.org/pypi/gspread/ (v0.1.0)
 
 # Get command line arguments
 parser = argparse.ArgumentParser(description='Load SNP and locus data')
@@ -17,11 +17,16 @@ parser.add_argument('--rkey', help='Google document key')
 parser.add_argument('--start', type=str, help='Chromosome to start load from')
 parser.add_argument('--bulk', action='store_true', help='Perform bulk insert.')
 parser.add_argument('--mongoimport', action='store_true', help='Bulk insert by creating json file and then using mongoimport.')
+parser.add_argument('--indexes', action='store_true', help='Create indexes')
+parser.add_argument('--queries', action='store_true', help='Run queries')
+
 args = parser.parse_args()
 
 # Set default variables
 dev = False
 remote = False
+createIndexes = False
+runQueries = False
 databaseName = 'snp_research'
 mongoHost = 'mongodb://localhost:27017/'
 collectionName = 'snps'
@@ -57,6 +62,10 @@ if args.bulk:
     bulk = True
 if args.mongoimport:
     mongoimport = True
+if args.indexes is not None:
+    createIndexes = args.indexes
+if args.queries is not None:
+    runQueries = args.queries
 
 # Open results file, print headers
 resultsFileName = 'results-mongo'
@@ -191,6 +200,25 @@ for curChr in chromosomes:
     # Log end time
     result.documentInsertEnd = time.time()
     result.calculate()
+
+    if createIndexes:
+        idxStart = time.time()
+        mongoCollection.create_index("rsid", unique=True)
+        idxEnd = time.time()
+        result.idxRsid = idxEnd - idxStart
+            
+        idxStart = time.time()
+        mongoCollection.create_index("has_sig")
+        idxEnd = time.time()
+        result.idxClinSig = idxEnd - idxStart        
+    
+        idxStart = time.time()
+        mongoCollection.create_index("loci.gene")
+        idxEnd = time.time()
+        result.idxGene = idxEnd - idxStart
+               
+    if runQueries:
+        x = 0    
     
     print result.toTerm()
     resultsFile.write(result.toString() + '\n')
