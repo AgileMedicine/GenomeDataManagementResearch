@@ -268,11 +268,24 @@ for curChr in chromosomes:
         result.idxGene = idxEnd - idxStart
            
     if runQueries:
-        result.qryByPk = '-'
-        result.qryByOid = '-'
-        result.qryByRsid = '-'
-        result.qryByClinSig = '-'
-        result.qryByGene = '-'
+        qryByPk = "SELECT * FROM locus l, snp s WHERE l.snp_id = s.id AND s.rsid = 'rs8788'"
+        idxStart = time.time()
+        cursor.execute(qryByPk)
+        idxEnd = time.time()
+        result.qryByPk = idxEnd - idxStart
+
+        qryByClinSig = "SELECT count(l.id) FROM locus l, snp s WHERE l.snp_id = s.id AND s.has_sig = true"
+        idxStart = time.time()
+        cursor.execute(qryByPk)
+        idxEnd = time.time()
+        result.qryByPk = idxEnd - idxStart
+
+        qryByGene = "SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = 'col18a1'"
+        idxStart = time.time()
+        cursor.execute(qryByPk)
+        idxEnd = time.time()
+        result.qryByGene = idxEnd - idxStart
+
         result.qryJoinGene = '-'
         result.qryJoinRsid = '-'
         result.qryJoinClinSig = '-'

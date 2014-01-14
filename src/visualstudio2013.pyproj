@@ -12,7 +12,7 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>--dev --username=dev --password=</CommandLineArguments>
+    <CommandLineArguments>--dev --username=dev --password= --queries</CommandLineArguments>
     <InterpreterPath />
     <InterpreterArguments />
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
