@@ -202,6 +202,7 @@ for curChr in chromosomes:
     result.calculate()
 
     if createIndexes:
+        print "Creating indexes..."
         idxStart = time.time()
         mongoCollection.create_index("rsid", unique=True)
         idxEnd = time.time()
@@ -218,6 +219,7 @@ for curChr in chromosomes:
         result.idxGene = idxEnd - idxStart
                
     if runQueries:
+        print "Running queries..."
         qryStart = time.time()
         mongoCollection.find({"rsid":"rs8788"})
         qryEnd = time.time()
@@ -229,14 +231,14 @@ for curChr in chromosomes:
         result.qryByClinSig = qryEnd-qryStart
         
         qryStart = time.time()
-        temptotal = mongoCollection.find({"loci.gene":"COL18A1"}).count()
+        temptotal = mongoCollection.find({"loci.gene":"GRIN2B"}).count()
         qryEnd = time.time()
         result.qryByGene = qryEnd-qryStart        
         
         qryStart = time.time()
-        temptotal = mongoCollection.find({"has_sig":"false","loci.gene":"COL18A1"}).count()
+        temptotal = mongoCollection.find({"has_sig":"true","loci.gene":"GRIN2B"}).count()
         qryEnd = time.time()
-        result.qryByGene = qryEnd-qryStart        
+        result.qryByGeneSig = qryEnd-qryStart        
         
     print result.toTerm()
     resultsFile.write(result.toString() + '\n')

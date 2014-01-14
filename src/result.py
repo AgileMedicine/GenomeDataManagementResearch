@@ -27,14 +27,10 @@ class Result:
     idxClinSig = '-'
     idxGene = '-'
     
-    qryByPk = '-'
-    qryByOid = '-'
     qryByRsid = '-'
     qryByClinSig = '-'
     qryByGene = '-'
-    qryJoinGene = '-'
-    qryJoinRsid = '-'
-    qryJoinClinSig = '-'
+    qryByGeneSig = '-'
     
     def __init__(self):
         return
@@ -48,8 +44,7 @@ class Result:
                          "Total MySQL Time",
                          "Document Insert Start", "Document Insert End", "Document Insert Time", "Total Documents",
                          "Idx-RSID", "Idx-ClinSig", "Idx-Gene", 
-                         "Qry-RSID", "Qry-ClinSig", "Qry-Gene",
-                         "QryJ-RSID", "QryJ-ClinSig", "QryJ-Gene"]
+                         "Qry-RSID", "Qry-ClinSig", "Qry-Gene", "Qry-Gene/Sig"]
     
     def stringArr(self):
         self.calculate()
@@ -61,8 +56,7 @@ class Result:
                                  str(self.mysqlTotalTime),
                                  str(self.documentInsertStart), str(self.documentInsertEnd), str(self.documentInsertTime), str(self.totalDocuments),
                                  str(self.idxRsid), str(self.idxClinSig), str(self.idxGene),
-                                 str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene),
-                                 str(self.qryJoinRsid), str(self.qryJoinClinSig), str(self.qryJoinGene)]        
+                                 str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene), str(self.qryByGeneSig)]        
     
     def toString(self):
         self.calculate()
@@ -74,8 +68,7 @@ class Result:
                          str(self.mysqlTotalTime),
                          str(self.documentInsertStart), str(self.documentInsertEnd), str(self.documentInsertTime), str(self.totalDocuments),
                          str(self.idxRsid), str(self.idxClinSig), str(self.idxGene),
-                         str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene),
-                         str(self.qryJoinRsid), str(self.qryJoinClinSig), str(self.qryJoinGene)])
+                         str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene), str(self.qryByGeneSig)])
     
     def toHeader(self):
         return '\t'.join(["Chromosome", "Method", "Tag", 
@@ -86,8 +79,7 @@ class Result:
                          "Total MySQL Time",
                          "Document Insert Start", "Document Insert End", "Document Insert Time", "Total Documents",
                          "Idx-RSID", "Idx-ClinSig", "Idx-Gene", 
-                         "Qry-RSID", "Qry-ClinSig", "Qry-Gene",
-                         "QryJ-RSID", "QryJ-ClinSig", "QryJ-Gene"])    
+                         "Qry-RSID", "Qry-ClinSig", "Qry-Gene", "Qry-Gene/Sig"])    
     def toTerm(self):
         self.calculate()
         return '\n'.join(["Chromosome: " + str(self.chromosome),

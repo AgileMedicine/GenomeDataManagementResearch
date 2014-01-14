@@ -248,6 +248,7 @@ for curChr in chromosomes:
     cursor = mysqlConnection.cursor()    
 
     if createIndexes:
+        print "Creating indexes..."
         rsidIndex = "CREATE UNIQUE INDEX `idx_rsid` ON `snp` (`rsid`)"
         clinIndex = "CREATE INDEX `idx_clin` ON `snp` (`has_sig`)"
         geneIndex = "CREATE INDEX `idx_gene` ON `locus` (`gene`)"
@@ -268,23 +269,26 @@ for curChr in chromosomes:
         result.idxGene = idxEnd - idxStart
            
     if runQueries:
-        qryByPk = "SELECT * FROM locus l, snp s WHERE l.snp_id = s.id AND s.rsid = 'rs8788'"
+        print "Running queries..."
         idxStart = time.time()
-        cursor.execute(qryByPk)
+        cursor.execute("SELECT * FROM locus l, snp s WHERE l.snp_id = s.id AND s.rsid = 'rs8788'")
         idxEnd = time.time()
-        result.qryByPk = idxEnd - idxStart
+        result.qryByRsid = idxEnd - idxStart
 
-        qryByClinSig = "SELECT count(l.id) FROM locus l, snp s WHERE l.snp_id = s.id AND s.has_sig = true"
         idxStart = time.time()
-        cursor.execute(qryByPk)
+        cursor.execute("SELECT count(s.id) FROM locus l, snp s WHERE l.snp_id = s.id AND s.has_sig = true")
         idxEnd = time.time()
-        result.qryByPk = idxEnd - idxStart
+        result.qryByClinSig = idxEnd - idxStart
 
-        qryByGene = "SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = 'col18a1'"
         idxStart = time.time()
-        cursor.execute(qryByPk)
+        cursor.execute("SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = 'GRIN2B'")
         idxEnd = time.time()
         result.qryByGene = idxEnd - idxStart
+        
+        idxStart = time.time()
+        cursor.execute("SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = 'GRIN2B' AND s.has_sig = true")
+        idxEnd = time.time()
+        result.qryByGeneSig = idxEnd - idxStart        
 
         result.qryJoinGene = '-'
         result.qryJoinRsid = '-'
