@@ -23,6 +23,19 @@ class Result:
     documentInsertTime = '-'
     totalDocuments = '-'
     
+    idxRsid = ''
+    idxClinSig = ''
+    idxGene = ''
+    
+    qryByPk = ''
+    qryByOid = ''
+    qryByRsid = ''
+    qryByClinSig = ''
+    qryByGene = ''
+    qryJoinGene = ''
+    qryJoinRsid = ''
+    qryJoinClinSig = ''
+    
     def __init__(self):
         return
     
@@ -33,7 +46,10 @@ class Result:
                          "SNP Insert Start", "SNP Insert End", "SNP Insert Time", "Total SNPs",
                          "Loci Insert Start", "Loci Insert End", "Loci Insert Time", "Total Loci",
                          "Total MySQL Time",
-                         "Document Insert Start", "Document Insert End", "Document Insert Time", "Total Documents"]
+                         "Document Insert Start", "Document Insert End", "Document Insert Time", "Total Documents",
+                         "Idx-RSID", "Idx-ClinSig", "Idx-Gene", 
+                         "Qry-PK", "Qry-Oid", "Qry-RSID", "Qry-ClinSig", "Qry-Gene",
+                         "QryJ-RSID", "QryJ-ClinSig", "QryJ-Gene"]
     
     def stringArr(self):
         self.calculate()
@@ -43,7 +59,10 @@ class Result:
                                  str(self.snpInsertStart), str(self.snpInsertEnd), str(self.snpInsertTime), str(self.totalSnps),
                                  str(self.lociInsertStart), str(self.lociInsertEnd), str(self.lociInsertTime), str(self.totalLoci),
                                  str(self.mysqlTotalTime),
-                                 str(self.documentInsertStart), str(self.documentInsertEnd), str(self.documentInsertTime), str(self.totalDocuments)]        
+                                 str(self.documentInsertStart), str(self.documentInsertEnd), str(self.documentInsertTime), str(self.totalDocuments),
+                                 str(self.idxRsid), str(self.idxClinSig), str(self.idxGene),
+                                 str(self.qryByPk), str(self.qryByOid), str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene),
+                                 str(self.qryJoinRsid), str(self.qryJoinClinSig), str(self.qryJoinGene)]        
     
     def toString(self):
         self.calculate()
@@ -53,7 +72,10 @@ class Result:
                          str(self.snpInsertStart), str(self.snpInsertEnd), str(self.snpInsertTime), str(self.totalSnps),
                          str(self.lociInsertStart), str(self.lociInsertEnd), str(self.lociInsertTime), str(self.totalLoci),
                          str(self.mysqlTotalTime),
-                         str(self.documentInsertStart), str(self.documentInsertEnd), str(self.documentInsertTime), str(self.totalDocuments)])
+                         str(self.documentInsertStart), str(self.documentInsertEnd), str(self.documentInsertTime), str(self.totalDocuments),
+                         str(self.idxRsid), str(self.idxClinSig), str(self.idxGene),
+                         str(self.qryByPk), str(self.qryByOid), str(self.qryByRsid), str(self.qryByClinSig), str(self.qryByGene),
+                         str(self.qryJoinRsid), str(self.qryJoinClinSig), str(self.qryJoinGene)])
     
     def toHeader(self):
         return '\t'.join(["Chromosome", "Method", "Tag", 
@@ -62,8 +84,10 @@ class Result:
                          "SNP Insert Start", "SNP Insert End", "SNP Insert Time", "Total SNPs",
                          "Loci Insert Start", "Loci Insert End", "Loci Insert Time", "Total Loci",
                          "Total MySQL Time",
-                         "Document Insert Start", "Document Insert End", "Document Insert Time", "Total Documents"])
-    
+                         "Document Insert Start", "Document Insert End", "Document Insert Time", "Total Documents",
+                         "Idx-RSID", "Idx-ClinSig", "Idx-Gene", 
+                         "Qry-PK", "Qry-Oid", "Qry-RSID", "Qry-ClinSig", "Qry-Gene",
+                         "QryJ-RSID", "QryJ-ClinSig", "QryJ-Gene"])    
     def toTerm(self):
         self.calculate()
         return '\n'.join(["Chromosome: " + str(self.chromosome),
