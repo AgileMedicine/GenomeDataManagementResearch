@@ -268,7 +268,14 @@ for curChr in chromosomes:
         result.idxGene = idxEnd - idxStart
            
     if runQueries:
-        x = 0
+        result.qryByPk = '-'
+        result.qryByOid = '-'
+        result.qryByRsid = '-'
+        result.qryByClinSig = '-'
+        result.qryByGene = '-'
+        result.qryJoinGene = '-'
+        result.qryJoinRsid = '-'
+        result.qryJoinClinSig = '-'
     
     # Close MySQL cursor
     cursor.close()    
