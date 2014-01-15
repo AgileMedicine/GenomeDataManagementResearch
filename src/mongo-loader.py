@@ -200,45 +200,6 @@ for curChr in chromosomes:
     # Log end time
     result.documentInsertEnd = time.time()
     result.calculate()
-
-    if createIndexes:
-        print "Creating indexes..."
-        idxStart = time.time()
-        mongoCollection.create_index("rsid", unique=True)
-        idxEnd = time.time()
-        result.idxRsid = idxEnd - idxStart
-            
-        idxStart = time.time()
-        mongoCollection.create_index("has_sig")
-        idxEnd = time.time()
-        result.idxClinSig = idxEnd - idxStart        
-    
-        idxStart = time.time()
-        mongoCollection.create_index("loci.gene")
-        idxEnd = time.time()
-        result.idxGene = idxEnd - idxStart
-               
-    if runQueries:
-        print "Running queries..."
-        qryStart = time.time()
-        mongoCollection.find({"rsid":"rs8788"})
-        qryEnd = time.time()
-        result.qryByRsid = qryEnd-qryStart
-        
-        qryStart = time.time()
-        temptotal = mongoCollection.find({"has_sig":"true"}).count()
-        qryEnd = time.time()
-        result.qryByClinSig = qryEnd-qryStart
-        
-        qryStart = time.time()
-        temptotal = mongoCollection.find({"loci.gene":"GRIN2B"}).count()
-        qryEnd = time.time()
-        result.qryByGene = qryEnd-qryStart        
-        
-        qryStart = time.time()
-        temptotal = mongoCollection.find({"has_sig":"true","loci.gene":"GRIN2B"}).count()
-        qryEnd = time.time()
-        result.qryByGeneSig = qryEnd-qryStart        
         
     print result.toTerm()
     resultsFile.write(result.toString() + '\n')
@@ -246,6 +207,56 @@ for curChr in chromosomes:
         print "Sending to GDocs..."
         gs.login()
         ws.append_row(result.stringArr())    
+
+result = Result()
+result.method = "Mongo-Idx/Qry"
+result.tag = tag
+
+if createIndexes:
+    print "Creating indexes..."
+    idxStart = time.time()
+    mongoCollection.create_index("rsid", unique=True)
+    idxEnd = time.time()
+    result.idxRsid = idxEnd - idxStart
+        
+    idxStart = time.time()
+    mongoCollection.create_index("has_sig")
+    idxEnd = time.time()
+    result.idxClinSig = idxEnd - idxStart        
+
+    idxStart = time.time()
+    mongoCollection.create_index("loci.gene")
+    idxEnd = time.time()
+    result.idxGene = idxEnd - idxStart
+           
+if runQueries:
+    print "Running queries..."
+    qryStart = time.time()
+    mongoCollection.find({"rsid":"rs8788"})
+    qryEnd = time.time()
+    result.qryByRsid = qryEnd-qryStart
+    
+    qryStart = time.time()
+    temptotal = mongoCollection.find({"has_sig":"true"}).count()
+    qryEnd = time.time()
+    result.qryByClinSig = qryEnd-qryStart
+    
+    qryStart = time.time()
+    temptotal = mongoCollection.find({"loci.gene":"GRIN2B"}).count()
+    qryEnd = time.time()
+    result.qryByGene = qryEnd-qryStart        
+    
+    qryStart = time.time()
+    temptotal = mongoCollection.find({"has_sig":"true","loci.gene":"GRIN2B"}).count()
+    qryEnd = time.time()
+    result.qryByGeneSig = qryEnd-qryStart     
+
+if createIndexes or runQueries:
+    resultsFile.write(result.toString() + '\n')
+    if remote:
+        print "Sending to GDocs..."
+        gs.login()
+        ws.append_row(result.stringArr()) 
 
 resultsFile.close()
 

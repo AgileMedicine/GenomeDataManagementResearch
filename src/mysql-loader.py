@@ -136,6 +136,11 @@ for name, ddl in TABLES.iteritems():
     createDbCursor.execute(ddl)
     mysqlConnection.commit()
 
+createDbCursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
+createDbCursor.execute("SET UNIQUE_CHECKS = 0;")
+createDbCursor.execute("SET SESSION tx_isolation='READ-UNCOMMITTED'")
+createDbCursor.execute("SET sql_log_bin = 0;")
+
 createDbCursor.close()
 
 # Dictionaries and arrays for SQL and MongoDB queries
@@ -244,60 +249,76 @@ for curChr in chromosomes:
     # Close MySQL cursor
     cursor.close()
     
-    # Create new cursor, create indexes and run test queries
-    cursor = mysqlConnection.cursor()    
-
-    if createIndexes:
-        print "Creating indexes..."
-        rsidIndex = "CREATE UNIQUE INDEX `idx_rsid` ON `snp` (`rsid`)"
-        clinIndex = "CREATE INDEX `idx_clin` ON `snp` (`has_sig`)"
-        geneIndex = "CREATE INDEX `idx_gene` ON `locus` (`gene`)"
-        
-        idxStart = time.time()
-        cursor.execute(rsidIndex)
-        idxEnd = time.time()
-        result.idxRsid = idxEnd - idxStart
-        
-        idxStart = time.time()
-        cursor.execute(clinIndex)
-        idxEnd = time.time()
-        result.idxClinSig = idxEnd - idxStart        
-
-        idxStart = time.time()
-        cursor.execute(geneIndex)
-        idxEnd = time.time()
-        result.idxGene = idxEnd - idxStart
-           
-    if runQueries:
-        print "Running queries..."
-        idxStart = time.time()
-        cursor.execute("SELECT * FROM locus l, snp s WHERE l.snp_id = s.id AND s.rsid = 'rs8788'")
-        idxEnd = time.time()
-        result.qryByRsid = idxEnd - idxStart
-
-        idxStart = time.time()
-        cursor.execute("SELECT count(s.id) FROM locus l, snp s WHERE l.snp_id = s.id AND s.has_sig = true")
-        idxEnd = time.time()
-        result.qryByClinSig = idxEnd - idxStart
-
-        idxStart = time.time()
-        cursor.execute("SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = 'GRIN2B'")
-        idxEnd = time.time()
-        result.qryByGene = idxEnd - idxStart
-        
-        idxStart = time.time()
-        cursor.execute("SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = 'GRIN2B' AND s.has_sig = true")
-        idxEnd = time.time()
-        result.qryByGeneSig = idxEnd - idxStart        
-
-        result.qryJoinGene = '-'
-        result.qryJoinRsid = '-'
-        result.qryJoinClinSig = '-'
-    
-    # Close MySQL cursor
-    cursor.close()    
-    
     print result.toTerm()
+    resultsFile.write(result.toString() + '\n')
+    if remote:
+        print "Sending to GDocs..."
+        gs.login()
+        ws.append_row(result.stringArr())
+
+result = Result()
+result.method = "MySQL-Idx/Qry"
+result.tag = tag
+
+# Create new cursor, create indexes and run test queries
+cursor = mysqlConnection.cursor()    
+
+cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+cursor.execute("SET UNIQUE_CHECKS = 1;")
+cursor.execute("SET SESSION tx_isolation='REPEATABLE-READ'")
+cursor.execute("SET sql_log_bin = 1;")
+
+if createIndexes:
+    print "Creating indexes..."
+    rsidIndex = "CREATE UNIQUE INDEX `idx_rsid` ON `snp` (`rsid`)"
+    clinIndex = "CREATE INDEX `idx_clin` ON `snp` (`has_sig`)"
+    geneIndex = "CREATE INDEX `idx_gene` ON `locus` (`gene`)"
+    
+    idxStart = time.time()
+    cursor.execute(rsidIndex)
+    idxEnd = time.time()
+    result.idxRsid = idxEnd - idxStart
+    
+    idxStart = time.time()
+    cursor.execute(clinIndex)
+    idxEnd = time.time()
+    result.idxClinSig = idxEnd - idxStart        
+
+    idxStart = time.time()
+    cursor.execute(geneIndex)
+    idxEnd = time.time()
+    result.idxGene = idxEnd - idxStart
+       
+if runQueries:
+    print "Running queries..."
+    idxStart = time.time()
+    cursor.execute("SELECT * FROM locus l, snp s WHERE l.snp_id = s.id AND s.rsid = 'rs8788'")
+    idxEnd = time.time()
+    result.qryByRsid = idxEnd - idxStart
+
+    idxStart = time.time()
+    cursor.execute("SELECT count(s.id) FROM locus l, snp s WHERE l.snp_id = s.id AND s.has_sig = true")
+    idxEnd = time.time()
+    result.qryByClinSig = idxEnd - idxStart
+
+    idxStart = time.time()
+    cursor.execute("SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = 'GRIN2B'")
+    idxEnd = time.time()
+    result.qryByGene = idxEnd - idxStart
+    
+    idxStart = time.time()
+    cursor.execute("SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = 'GRIN2B' AND s.has_sig = true")
+    idxEnd = time.time()
+    result.qryByGeneSig = idxEnd - idxStart        
+
+    result.qryJoinGene = '-'
+    result.qryJoinRsid = '-'
+    result.qryJoinClinSig = '-'
+
+# Close MySQL cursor
+cursor.close()
+
+if createIndexes or runQueries:
     resultsFile.write(result.toString() + '\n')
     if remote:
         print "Sending to GDocs..."
@@ -307,3 +328,4 @@ for curChr in chromosomes:
 resultsFile.close()
 
 mysqlConnection.close()
+print "All done!"
