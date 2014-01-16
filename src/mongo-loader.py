@@ -22,6 +22,9 @@ parser.add_argument('--queries', action='store_true', help='Run queries')
 
 args = parser.parse_args()
 
+# Set script version
+scriptVersion = "2.0"
+
 # Set default variables
 dev = False
 remote = False
@@ -73,6 +76,7 @@ if resultsFileName != "":
     resultsFileName += '-' + tag
 resultsFileName += '.txt'
 resultsFile = open(resultsFileName, 'w')
+resultsFile.write(scriptVersion + '\n')
 result = Result()
 resultsFile.write(result.toHeader() + '\n')
 
@@ -208,11 +212,11 @@ for curChr in chromosomes:
         gs.login()
         ws.append_row(result.stringArr())    
 
-result = Result()
-result.method = "Mongo-Idx/Qry"
-result.tag = tag
-
 if createIndexes:
+    result = Result()
+    result.method = "Mongo-Idx"
+    result.tag = tag
+    
     print "Creating RSID index..."
     idxStart = time.time()
     mongoCollection.create_index("rsid", unique=True)
@@ -230,35 +234,44 @@ if createIndexes:
     mongoCollection.create_index("loci.gene")
     idxEnd = time.time()
     result.idxGene = idxEnd - idxStart
-           
-if runQueries:
-    print "Running queries..."
-    qryStart = time.time()
-    mongoCollection.find({"rsid":"rs8788"})
-    qryEnd = time.time()
-    result.qryByRsid = qryEnd-qryStart
     
-    qryStart = time.time()
-    temptotal = mongoCollection.find({"has_sig":"true"}).count()
-    qryEnd = time.time()
-    result.qryByClinSig = qryEnd-qryStart
-    
-    qryStart = time.time()
-    temptotal = mongoCollection.find({"loci.gene":"GRIN2B"}).count()
-    qryEnd = time.time()
-    result.qryByGene = qryEnd-qryStart        
-    
-    qryStart = time.time()
-    temptotal = mongoCollection.find({"has_sig":"true","loci.gene":"GRIN2B"}).count()
-    qryEnd = time.time()
-    result.qryByGeneSig = qryEnd-qryStart     
-
-if createIndexes or runQueries:
     resultsFile.write(result.toString() + '\n')
     if remote:
         print "Sending to GDocs..."
         gs.login()
         ws.append_row(result.stringArr()) 
+           
+if runQueries:
+    for z in range(1,101):
+        result = Result()
+        result.method = "Mongo-Qry" + str(z)
+        result.tag = tag
+        print "Running queries, count " + str(z)
+        qryStart = time.time()
+        mongoCollection.find({"rsid":"rs8788"})
+        qryEnd = time.time()
+        result.qryByRsid = qryEnd-qryStart
+    
+        qryStart = time.time()
+        temptotal = mongoCollection.find({"has_sig":"true"}).count()
+        qryEnd = time.time()
+        result.qryByClinSig = qryEnd-qryStart
+    
+        qryStart = time.time()
+        temptotal = mongoCollection.find({"loci.gene":"GRIN2B"}).count()
+        qryEnd = time.time()
+        result.qryByGene = qryEnd-qryStart        
+    
+        qryStart = time.time()
+        temptotal = mongoCollection.find({"has_sig":"true","loci.gene":"GRIN2B"}).count()
+        qryEnd = time.time()
+        result.qryByGeneSig = qryEnd-qryStart     
+
+        resultsFile.write(result.toString() + '\n')
+        if remote:
+            print "Sending to GDocs..."
+            gs.login()
+            ws.append_row(result.stringArr()) 
 
 resultsFile.close()
 
