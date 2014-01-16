@@ -213,17 +213,19 @@ result.method = "Mongo-Idx/Qry"
 result.tag = tag
 
 if createIndexes:
-    print "Creating indexes..."
+    print "Creating RSID index..."
     idxStart = time.time()
     mongoCollection.create_index("rsid", unique=True)
     idxEnd = time.time()
     result.idxRsid = idxEnd - idxStart
         
+    print "Creating ClinSig index..."
     idxStart = time.time()
     mongoCollection.create_index("has_sig")
     idxEnd = time.time()
     result.idxClinSig = idxEnd - idxStart        
 
+    print "Creating Gene index..."
     idxStart = time.time()
     mongoCollection.create_index("loci.gene")
     idxEnd = time.time()
@@ -261,3 +263,4 @@ if createIndexes or runQueries:
 resultsFile.close()
 
 mongoClient.close()
+print "Run complete."

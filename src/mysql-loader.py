@@ -263,27 +263,28 @@ result.tag = tag
 # Create new cursor, create indexes and run test queries
 cursor = mysqlConnection.cursor()    
 
+print "Turning on key checks..."
 cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
 cursor.execute("SET UNIQUE_CHECKS = 1;")
-cursor.execute("SET SESSION tx_isolation='REPEATABLE-READ'")
-cursor.execute("SET sql_log_bin = 1;")
 
 if createIndexes:
-    print "Creating indexes..."
     rsidIndex = "CREATE UNIQUE INDEX `idx_rsid` ON `snp` (`rsid`)"
     clinIndex = "CREATE INDEX `idx_clin` ON `snp` (`has_sig`)"
     geneIndex = "CREATE INDEX `idx_gene` ON `locus` (`gene`)"
     
+    print "Creating RSID index..."
     idxStart = time.time()
     cursor.execute(rsidIndex)
     idxEnd = time.time()
     result.idxRsid = idxEnd - idxStart
     
+    print "Creating ClinSig index..."
     idxStart = time.time()
     cursor.execute(clinIndex)
     idxEnd = time.time()
     result.idxClinSig = idxEnd - idxStart        
 
+    print "Creating Gene index..."
     idxStart = time.time()
     cursor.execute(geneIndex)
     idxEnd = time.time()
@@ -328,4 +329,4 @@ if createIndexes or runQueries:
 resultsFile.close()
 
 mysqlConnection.close()
-print "All done!"
+print "Run complete."
