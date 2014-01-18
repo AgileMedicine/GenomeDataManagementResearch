@@ -1,25 +1,27 @@
 import argparse
 import csv, os, time
-from pymongo import MongoClient, ASCENDING # https://pypi.python.org/pypi/pymongo/ (v2.6.3)
+import MySQLdb  # http://sourceforge.net/projects/mysql-python/
+import result
 from result import Result
-import gspread, getpass, json, os # https://pypi.python.org/pypi/gspread/ (v0.1.0)
+import gspread, getpass # https://pypi.python.org/pypi/gspread/ (v0.1.0)
 
 # Get command line arguments
-parser = argparse.ArgumentParser(description='Run MongoDB queries')
-parser.add_argument('--db', type=str, help='MongoDB database name')
-parser.add_argument('--ohost', type=str, help='MongoDB host')
-parser.add_argument('--coll', type=str, help='MongoDB collection')
+parser = argparse.ArgumentParser(description='Load SNP and locus data')
+parser.add_argument('--db', type=str, help='MySQL database name')
+parser.add_argument('--yhost', type=str, help='MySQL host')
+parser.add_argument('--username', type=str, help='MySQL username')
+parser.add_argument('--password', type=str, help='MySQL password')
 parser.add_argument('--tag', type=str, help='Tag to place in results file')
 parser.add_argument('--remote', action='store_true', help='Enable remote reporting')
 parser.add_argument('--rkey', help='Google document key')
-
 args = parser.parse_args()
 
 # Set default variables
 remote = False
 databaseName = 'snp_research'
-mongoHost = 'mongodb://localhost:27017/'
-collectionName = 'snps'
+username = 'dev'
+password = ''
+sqlHost = '127.0.0.1'
 tag = ''
 docKey = ''
 
@@ -29,18 +31,20 @@ if args.remote and args.rkey is not None: # If set to remote log and document ke
     docKey = args.rkey
 else:
     remote = False
-
-if args.db is not None: # If set, use as database name for MySQL and MongoDB
+    
+if args.db is not None: # If set, use as database name for MySQL
     databaseName = args.db
-if args.ohost is not None: # MongoDB connection string
-    mongoHost = args.ohost
-if args.coll is not None: # MongoDB collection name
-    collectionName = args.coll
+if args.username is not None: # MySQL username
+    username = args.username
+if args.password is not None: # MySQL password
+    password = args.password
+if args.yhost is not None: # MySQL host name
+    sqlHost = args.yhost
 if args.tag is not None: # Tag to place in results file
     tag = args.tag
 
 # Open results file, print headers
-resultsFileName = 'results-mongoqueries'
+resultsFileName = 'results-mysqlqueries'
 if resultsFileName != "":
     resultsFileName += '-' + tag
 resultsFileName += '.txt'
@@ -57,27 +61,26 @@ if remote:
     ws = ss.add_worksheet(tag + "-" + str(time.time()),1,1)
     ws.append_row(result.headerArr())
 
-# Create MongoDB connection
-mongoClient = MongoClient(mongoHost)
-mongoDb = mongoClient[databaseName]
-mongoCollection = mongoDb[collectionName]
-    
+# Create MySQL database, tables if not exists
+mysqlConnection = MySQLdb.connect(host=sqlHost,user=username,passwd=password,db=databaseName)
+cursor = mysqlConnection.cursor()
+
 genes = ["ACSL6","ZDHHC8","TPH1","SYN2","DISC1","DISC2","COMT","FXYD6","ERBB4","DAOA","MEGF10","SLC18A1","DYM","SREBF2","NXRN1","CSF2RA","IL3RA","DRD2"]
 
 for z in range(1,11):
     for g in genes:
         result = Result()
-        result.method = "Mongo-QrySet" + str(z)
+        result.method = "MySQL-QrySet" + str(z)
         result.tag = tag + "-" + g + "/" + str(z)
         print "Running queries: " + g + "/" + str(z)
     
         qryStart = time.time()
-        temptotal = mongoCollection.find({"loci.gene":g}).count()
+        cursor.execute("SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = '" + g + "'")
         qryEnd = time.time()
         result.qryByGene = qryEnd-qryStart        
     
         qryStart = time.time()
-        temptotal = mongoCollection.find({"has_sig":"true","loci.gene":g}).count()
+        cursor.execute("SELECT count(distinct s.rsid) FROM locus l, snp s WHERE l.snp_id = s.id AND l.gene = '" + g + "' AND s.has_sig = true")
         qryEnd = time.time()
         result.qryByGeneSig = qryEnd-qryStart     
 
