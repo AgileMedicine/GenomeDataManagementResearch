@@ -24,6 +24,7 @@
     <Content Include="results-mysql-.txt" />
     <Content Include="snpData-chr21.txt" />
     <Compile Include="mongo-loader.py" />
+    <Compile Include="mongo-queries.py" />
     <Compile Include="mysql-loader.py" />
     <Compile Include="result.py" />
   </ItemGroup>
