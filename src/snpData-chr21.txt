@@ -466,7 +466,7 @@ rs157051	21	false
 rs157052	21	false
 rs157053	21	false
 rs157054	21	false
-rs157055	21	false
+rs157055	21	true
 rs157056	21	false
 rs157057	21	false
 rs157058	21	false
