@@ -182,7 +182,7 @@ for curChr in chromosomes:
         for row in data:
             if(len(row) == 3):        
                 hasSig = False
-                if row[2] != '' and row[2] != 'untested':
+                if row[2] != '' and row[2] != 'false':
                     hasSig = True
                 rsidList[row[0]] = 0
                 insStr = "INSERT INTO snp (rsid, chr, has_sig) VALUES (\"{0}\", \"{1}\", {2})".format(row[0], row[1], hasSig)

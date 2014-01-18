@@ -148,9 +148,9 @@ for curChr in chromosomes:
         for row in data:
             if(len(row) == 3):
                 hasSig = False
-                if row[2] != '' and row[2] != 'untested':
+                if row[2] != '' and row[2] != 'false':
                     hasSig = True
-                documents[row[0]] = {"rsid":row[0], "chr":row[1], "has_sig":row[2], "loci":[]}
+                documents[row[0]] = {"rsid":row[0], "chr":row[1], "has_sig":hasSig, "loci":[]}
 
     result.snpLoadEnd = time.time()
 
