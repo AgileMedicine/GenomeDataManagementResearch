@@ -256,9 +256,12 @@ for curChr in chromosomes:
     print result.toTerm()
     resultsFile.write(result.toString() + '\n')
     if remote:
-        print "Sending to GDocs..."
-        gs.login()
-        ws.append_row(result.stringArr())
+        try:
+            print "Sending to GDocs..."
+            gs.login()
+            ws.append_row(result.stringArr())
+        except:
+            print "Unable to send to GDocs, continuing..."
 
 # Create new cursor, create indexes and run test queries
 cursor = mysqlConnection.cursor()    
@@ -296,9 +299,12 @@ if createIndexes:
 
     resultsFile.write(result.toString() + '\n')
     if remote:
-        print "Sending to GDocs..."
-        gs.login()
-        ws.append_row(result.stringArr()) 
+        try:
+            print "Sending to GDocs..."
+            gs.login()
+            ws.append_row(result.stringArr()) 
+        except:
+            print "Unable to send to GDocs, continuing..."
        
 if runQueries:
     for z in range(1,101):
@@ -329,9 +335,12 @@ if runQueries:
 
         resultsFile.write(result.toString() + '\n')
         if remote:
-            print "Sending to GDocs..."
-            gs.login()
-            ws.append_row(result.stringArr()) 
+            try:
+                print "Sending to GDocs..."
+                gs.login()
+                ws.append_row(result.stringArr()) 
+            except:
+                print "Unable to send to GDocs, continuing..."
 
 # Close MySQL cursor
 cursor.close()

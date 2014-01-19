@@ -86,8 +86,11 @@ for z in range(1,11):
 
         resultsFile.write(result.toString() + '\n')
         if remote:
-            print "Sending to GDocs..."
-            gs.login()
-            ws.append_row(result.stringArr()) 
+            try:
+                print "Sending to GDocs..."
+                gs.login()
+                ws.append_row(result.stringArr()) 
+            except:
+                print "Unable to send to GDocs, continuing..."
 
 print "Run complete!"
