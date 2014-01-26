@@ -77,7 +77,7 @@ for z in range(1,11):
         result.qryByGene = qryEnd-qryStart        
     
         qryStart = time.time()
-        temptotal = mongoCollection.find({"has_sig":"true","loci.gene":g}).count()
+        temptotal = mongoCollection.find({"has_sig":True,"loci.gene":g}).count()
         qryEnd = time.time()
         result.qryByGeneSig = qryEnd-qryStart     
 

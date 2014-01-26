@@ -259,7 +259,7 @@ if runQueries:
         result.qryByRsid = qryEnd-qryStart
     
         qryStart = time.time()
-        temptotal = mongoCollection.find({"has_sig":"true"}).count()
+        temptotal = mongoCollection.find({"has_sig":True}).count()
         qryEnd = time.time()
         result.qryByClinSig = qryEnd-qryStart
     
@@ -269,7 +269,7 @@ if runQueries:
         result.qryByGene = qryEnd-qryStart        
     
         qryStart = time.time()
-        temptotal = mongoCollection.find({"has_sig":"true","loci.gene":"GRIN2B"}).count()
+        temptotal = mongoCollection.find({"has_sig":True,"loci.gene":"GRIN2B"}).count()
         qryEnd = time.time()
         result.qryByGeneSig = qryEnd-qryStart     
 
