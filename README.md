@@ -1,4 +1,4 @@
-research_snpdb
+Genome Data Management Research
 ==============
 
 Script to load SNP and locus data from tab-delimited files into MySQL and MongoDB for performance comparisons.
